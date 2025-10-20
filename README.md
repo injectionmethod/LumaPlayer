@@ -4,14 +4,14 @@ An alternative media player designed to address issues within Microsoft's codec 
 
 ---
 
-## 🎨 Screenshots
+## Screenshots
 
 <!-- Replace these placeholders with actual screenshots -->
-![Current Build](./images/main-interface.png)
+![Current Build](<img width="1221" height="905" alt="image" src="https://github.com/user-attachments/assets/a7a621aa-c7cf-4aab-8a2e-511cc0e51f0c" />)
 
 ---
 
-## ⚡ Features
+## Features
 
 - **Universal Media Playback**
   - Plays images, videos, and audio.
@@ -75,26 +75,48 @@ An alternative media player designed to address issues within Microsoft's codec 
 
 ---
 
-## 🛠 Installation
+## Installation
 
 1. Clone or download this repository.
-2. Open `index.html` in your browser (modern browsers recommended: Chrome, Edge, Firefox).
+2. Open `LumaPlayer.html` in your browser (modern browsers recommended: Chrome, Edge, Firefox).
 3. Drag and drop files or folders, or add URLs to start playback.
+4. (Optional) Create a desktop extension for ease of access
 
 ---
 
-## 📩 Contact / Support
+## Hosting
+
+- You can either use the server.js from the "Hosting" folder or simply write your own
+- Since the frontend doesnt call to a server there is no risk of clients getting playlists combined or jumbled
+
+---
+
+## Contact / Support
 
 If you have questions or want to report a bug, send an email to:  
 **injectionmethod@proton.me**
+Alternatively you can leave an issue report here
 
 ---
 
-## 📝 Notes
+## Notes
 
 - LumaPlayer is browser-based, so local files cannot be permanently saved between sessions.
 - Remote URLs are stored temporarily for session restoration.
 - Version: `v1.a`
+
+---
+
+## To-Do
+
+- Automatic subtitle loading if .srt files are included in directory
+- General bug fixes
+- Playlist extension filters
+- Persistent history loading
+- Better integration of adding remote files from url
+- Option to try use your ffmpeg install to handle unsupported or missing codecs
+- Further file format support
+- Better integration of the visualizer
 
 ---
 
