@@ -60,7 +60,7 @@ An alternative media player designed to address issues within Microsoft's codec 
 
 ---
 
-## ⌨️ Keyboard Shortcuts
+## Keyboard Shortcuts
 
 | Key       | Action                          |
 |-----------|--------------------------------|
