@@ -2,6 +2,8 @@
 
 An alternative media player designed to address issues within Microsoft's codec support and VLC slideshow limitations. LumaPlayer focuses on smooth playback for local and remote media with an intuitive interface and useful enhancements.
 
+- Version: `v1.a`
+
 **LumaPlayer is open source**
 
 **(For hosters: you are responsible for how you track users or any adaptations that make calls to your backend)**
@@ -107,7 +109,6 @@ Alternatively you can leave an issue report here
 
 - LumaPlayer is browser-based, so local files cannot be permanently saved between sessions.
 - Remote URLs are stored temporarily for session restoration.
-- Version: `v1.a`
 
 ---
 
