@@ -2,6 +2,8 @@
 
 An alternative media player designed to address issues within Microsoft's codec support and VLC slideshow limitations. LumaPlayer focuses on smooth playback for local and remote media with an intuitive interface and useful enhancements.
 
+**LumaPlayer is open source**
+
 ---
 
 ## Screenshots
