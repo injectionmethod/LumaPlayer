@@ -8,13 +8,11 @@ const server = http.createServer((req, res) => {
   connections++;
   console.log(`New connection! Total connections: ${connections}`);
 
-  // Track disconnections
   req.on('close', () => {
     connections--;
     console.log(`Connection closed. Total connections: ${connections}`);
   });
 
-  // Serve the HTML file
   let filePath = path.join(__dirname, 'LumaPlayer.html');
   fs.readFile(filePath, (err, content) => {
     if (err) {
@@ -27,6 +25,7 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(1488, () => {
-  console.log('Server running on port 1488');
+server.listen(ENTER_YOUR_PORT_HERE, () => {
+  console.log('Server running');
 });
+
