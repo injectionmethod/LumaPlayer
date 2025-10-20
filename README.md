@@ -7,7 +7,7 @@ An alternative media player designed to address issues within Microsoft's codec 
 ## Screenshots
 
 
-!(<img width="1221" height="905" alt="image" src="https://github.com/user-attachments/assets/a7a621aa-c7cf-4aab-8a2e-511cc0e51f0c" />)
+<img width="1221" height="905" alt="image" src="https://github.com/user-attachments/assets/a7a621aa-c7cf-4aab-8a2e-511cc0e51f0c" />)
 
 ---
 
