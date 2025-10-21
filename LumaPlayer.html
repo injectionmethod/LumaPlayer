@@ -1396,9 +1396,10 @@ document.addEventListener('fullscreenchange', () => {
     rebuildPlaylist
   };
   
-  // Subtitle Handler
-  const subtitleInput = document.getElementById('subtitleInput');
+ // Subtitle Handler
+const subtitleInput = document.getElementById('subtitleInput');
 const addSubtitleBtn = document.getElementById('addSubtitleBtn');
+let currentSubtitleURL = null; // store the current blob URL
 
 addSubtitleBtn.addEventListener('click', () => subtitleInput.click());
 
@@ -1409,38 +1410,49 @@ subtitleInput.addEventListener('change', async (e) => {
   const text = await file.text();
   const vttText = file.name.endsWith('.srt') ? srtToVtt(text) : text;
 
+  // Revoke old blob URL if exists
+  if (currentSubtitleURL) {
+    URL.revokeObjectURL(currentSubtitleURL);
+    currentSubtitleURL = null;
+  }
+
   // Remove old tracks
   Array.from(video.querySelectorAll('track')).forEach(t => t.remove());
+
+  // Small delay ensures the browser unregisters the old track
+  await new Promise(r => setTimeout(r, 50));
 
   // Create new track
   const track = document.createElement('track');
   track.kind = 'subtitles';
   track.label = file.name;
   track.srclang = 'en';
-  track.default = true; // mark as default
+  track.default = true;
 
   // Blob URL for subtitles
   const blob = new Blob([vttText], { type: 'text/vtt' });
-  track.src = URL.createObjectURL(blob);
+  const blobURL = URL.createObjectURL(blob);
+  currentSubtitleURL = blobURL;
+
+  track.src = blobURL;
 
   video.appendChild(track);
 
   // Wait for the track to load before showing it
   track.addEventListener('load', () => {
-    track.mode = 'showing'; // now it will display
+    track.mode = 'showing';
   });
 });
 
 function srtToVtt(data) {
-  // Add WebVTT header
   let vtt = 'WEBVTT\n\n';
-  // Replace SRT time format "00:00:01,500" → "00:00:01.500"
   vtt += data
     .replace(/\r+/g, '')
     .replace(/^\d+\s*$/gm, '') // remove SRT index numbers
-    .replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2'); // comma to dot
+    .replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
   return vtt;
 }
+
 
 // Default Rainbow
 let __rainbowInterval = null;
