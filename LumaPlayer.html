@@ -421,7 +421,9 @@ video,img{
       <button id="muteBtn">🔊</button>
 	  
       <!-- Accent color picker -->
-      <input id="accentPicker" type="color" title="Pick accent color" style="width:36px;height:36px;border-radius:8px;border:none;margin-left:8px;">
+      <input id="accentPicker" type="color" title="Pick accent color" 
+       style="width:36px;height:36px;border-radius:8px;border:none;margin-left:8px;"><button id="resetAccentBtn" title="Reset to rainbow accent" 
+       style="margin-left:6px;padding:4px 8px;border:none;border-radius:6px;cursor:pointer;">🌈</button>
       <button id="cinemaBtn" title="Cinema mode">🎬</button>
       <button id="historyBtn" title="Playback history">📜</button>
     </div>
@@ -436,7 +438,7 @@ video,img{
       <!-- visualizer canvas (for audio) -->
       <canvas id="visualizer" class="visualizer-canvas" width="640" height="160" style="display:none;"></canvas>
 
-      <!-- thumbnail preview shown on seek hover -->
+      <!-- thumbnail preview on seek hover -->
       <div class="thumbnail-preview" id="thumbPreview"><canvas id="thumbCanvas" width="320" height="180"></canvas></div>
     </div>
 
@@ -595,7 +597,7 @@ video,img{
   let history = JSON.parse(localStorage.getItem('player_history')||'[]'); // {name,url,date,position}
   const THUMB_W = 320, THUMB_H = 180;
 
-  // --- LocalStorage: restore simple settings ---
+  // --- LocalStorage: restore simple ---
   if(localStorage.getItem('accent')) document.documentElement.style.setProperty('--accent', localStorage.getItem('accent'));
   if(localStorage.getItem('theme')==='light') document.body.classList.add('light');
   themeBtn.textContent=document.body.classList.contains('light')?'🌙':'🌞';
@@ -672,7 +674,6 @@ function shortenFileName(name, maxLen = 28) {
   if (name.length <= maxLen) return name;
   const lastDot = name.lastIndexOf('.');
   if (lastDot === -1 || lastDot === 0) {
-    // no extension or starts with dot
     return name.slice(0, maxLen - 3) + '..';
   }
   const ext = name.slice(lastDot);
@@ -738,8 +739,7 @@ function rebuildPlaylist(){
     removeBtn.title = 'Remove from playlist';
     removeBtn.style.marginLeft = '6px';
     removeBtn.addEventListener('click', (e) => {
-      e.stopPropagation(); // prevent triggering playIndex
-      // revoke blob URL if local file
+      e.stopPropagation();
       if(it.url && it.file) URL.revokeObjectURL(it.url);
       items.splice(i, 1);
       if(index >= items.length) index = items.length - 1;
@@ -780,9 +780,8 @@ function rebuildPlaylist(){
       img.crossOrigin = 'anonymous';
       img.src = file.url;
       img.onload = ()=>{
-        // basic metadata
         fileMeta.textContent = `${name} • ${type} • ${size} • ${img.width}x${img.height}px`;
-        // attempt to read basic EXIF Orientation tag (very small helper)
+        // attempt to read basic EXIF
         if(file.file && file.file instanceof File){
           readEXIFOrientation(file.file).then(o=>{
             if(o) fileMeta.textContent += ` • EXIF orient:${o}`;
@@ -834,7 +833,7 @@ function rebuildPlaylist(){
       video.style.display='block';
       video.src = it.url;
       video.load();
-      // try to restore lastPos if present
+      // try to restore last position
       if(typeof it.lastPos === 'number' && it.lastPos > 0){
         video.addEventListener('loadedmetadata', function rescue() {
           try {
@@ -854,7 +853,7 @@ function rebuildPlaylist(){
       video.src = it.url;
       video.load();
       video.controls = true;
-      // show visualizer automatically
+      // audio visualizer auto display
       showVisualizer();
       if(slideshowToggle.checked || isPlaying) video.play();
       playBtn.textContent = (isPlaying||slideshowToggle.checked)?'Pause ▮▮':'Play ▶';
@@ -887,9 +886,7 @@ function rebuildPlaylist(){
   function prev(){ if(items.length===0) return; let i=index-1; if(i<0)i=items.length-1; playIndex(i); }
   function next(fromAuto=false){
     if(items.length===0) return;
-    // smart shuffle or normal
     if(shuffleBtn.dataset.on === 'true'){
-      // pick next not in playedSet
       if(playedSet.size >= items.length) playedSet.clear();
       let candidates = items.map((it,idx)=>idx).filter(idx => !playedSet.has(idx));
       if(candidates.length === 0) candidates = items.map((it,idx)=>idx);
@@ -964,7 +961,7 @@ function rebuildPlaylist(){
 
 document.addEventListener('fullscreenchange', () => {
   fsBtn.textContent = document.fullscreenElement ? '⤡' : '⤢';
-  // clean up if user exits fullscreen with ESC
+
   if(!document.fullscreenElement){
     video.classList.remove('fullscreen-media');
     image.classList.remove('fullscreen-media');
@@ -1005,7 +1002,6 @@ document.addEventListener('fullscreenchange', () => {
 
   // --- Keyboard ---
  document.addEventListener('keydown', e => {
-  // Ignore keybinds if typing in search box
   if(document.activeElement === playlistSearch) return;
 
   if(e.code==='Space'){ e.preventDefault(); playBtn.click(); }
@@ -1046,18 +1042,16 @@ document.addEventListener('fullscreenchange', () => {
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='playlist.txt'; a.click(); URL.revokeObjectURL(a.href);
   });
 
-  // --- Error handling ---
+  // --- Codec error handling ---
   video.addEventListener('error',()=>{ timeLabel.textContent='Playback error: unsupported codec'; });
 
-  // --- Cleanup on unload: save session and revoke blob URLs ---
+  // --- Cleanup on unload ---
   window.addEventListener('beforeunload',()=>{
-    // Save session (only remote URLs and names can be restored)
+    // Save session
     try {
       const save = { items: items.filter(it=>it.remote).map(it=>({url:it.url,name:it.name,type:it.type,lastPos:it.lastPos||0})), index, currentTime: video.currentTime || 0 };
       localStorage.setItem('player_saved_session', JSON.stringify(save));
-      // also save history
       localStorage.setItem('player_history', JSON.stringify(history.slice(-200))); // keep last 200
-      // revoke blob urls
       items.forEach(it=>{ if(it.url && it.file) URL.revokeObjectURL(it.url); });
     } catch(e){}
   });
@@ -1076,13 +1070,13 @@ document.addEventListener('fullscreenchange', () => {
     localStorage.setItem('accent', e.target.value);
   });
 
-  // --- Thumbnail preview for seek bar ---
+  // --- Thumbnail preview (Under Construction) ---
   const thumbCtx = thumbCanvas.getContext('2d');
   const seekRectCache = { left:0, width:0 };
   seek.addEventListener('mousemove', async (ev) => {
     if(index===-1) return;
     const it = items[index];
-    // need a video source to preview frames - only works for video or remote CORS-permitted
+
     if(!isVideo(it.type,it.name)) return;
     if(!seekRectCache.width){
       const r = seek.getBoundingClientRect(); seekRectCache.left = r.left; seekRectCache.width = r.width;
@@ -1090,22 +1084,22 @@ document.addEventListener('fullscreenchange', () => {
     const ratio = (ev.clientX - seekRectCache.left) / seekRectCache.width;
     if(ratio < 0 || ratio > 1) { thumbPreview.style.display='none'; return; }
     const previewTime = (video.duration || 0) * ratio;
-    // position preview
-    const x = ev.clientX - 80; // center
+
+    const x = ev.clientX - 80;
     thumbPreview.style.left = Math.max(8, Math.min(window.innerWidth - THUMB_W - 8, x)) + 'px';
     thumbPreview.style.top = (viewer.getBoundingClientRect().top - THUMB_H - 12) + 'px';
     thumbPreview.style.display='block';
     try {
-      // use an offscreen video to seek (we can use the current video element but avoid changing main player's time)
+      // offscreen video to seek
       await drawVideoFrameAtTime(it.url, previewTime, thumbCtx);
     } catch(e){
-      // can't seek due to CORS or codec; hide preview
+      // CORS fallback
       thumbPreview.style.display='none';
     }
   });
   seek.addEventListener('mouseleave', ()=>{ thumbPreview.style.display='none'; });
 
-  // helper to draw video frame from url at time t to context
+  // frame from url helper
   async function drawVideoFrameAtTime(url, t, ctx){
     return new Promise((resolve,reject)=>{
       const v = document.createElement('video');
@@ -1115,28 +1109,26 @@ document.addEventListener('fullscreenchange', () => {
       v.src = url;
       v.currentTime = Math.max(0, t);
       v.preload = 'auto';
-      // attempt to play briefly (some browsers require playback) - instead we'll use loadedmetadata + seek
+      // attempt to play briefly
       v.addEventListener('loadeddata', function loaded(){
-        // clamp time
+        // clamp
         if(v.duration && t > v.duration) t = Math.max(0, v.duration - 0.1);
         v.currentTime = t;
       });
       v.addEventListener('seeked', function onseek(){
         try {
           ctx.clearRect(0,0,THUMB_W,THUMB_H);
-          // draw
           ctx.drawImage(v, 0,0, THUMB_W, THUMB_H);
         } catch(e){ v.remove(); reject(e); return; }
         v.remove();
         resolve();
       });
       v.addEventListener('error', (e)=>{ v.remove(); reject(e); });
-      // safety: timeout in 1200ms
       setTimeout(()=>{ try{ v.remove(); reject(new Error('timeout')); }catch(e){} }, 1500);
     });
   }
 
-  // --- Visualizer (AudioContext + analyser) ---
+  // --- Visualizer ---
   const vizCtx = visualizerCanvas.getContext('2d');
   vizCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent') + 'CC';
   function showVisualizer() {
@@ -1161,7 +1153,6 @@ document.addEventListener('fullscreenchange', () => {
     visualizerCanvas.style.display = 'none';
     if(vizAnimation) cancelAnimationFrame(vizAnimation);
     vizAnimation = null;
-    // Do not close audioCtx to allow reuse
   }
   function renderVisualizer(){
     const bufferLength = analyser.frequencyBinCount;
@@ -1172,7 +1163,6 @@ document.addEventListener('fullscreenchange', () => {
       vizAnimation = requestAnimationFrame(draw);
       analyser.getByteFrequencyData(data);
       vizCtx.clearRect(0,0, visualizerCanvas.width, visualizerCanvas.height);
-      // normalize canvas size for crispness
       visualizerCanvas.width = Math.floor(visualizerCanvas.clientWidth * devicePixelRatio);
       visualizerCanvas.height = Math.floor(visualizerCanvas.clientHeight * devicePixelRatio);
       const cw = visualizerCanvas.width, ch = visualizerCanvas.height;
@@ -1197,7 +1187,6 @@ document.addEventListener('fullscreenchange', () => {
     if(index === -1) return;
     const it = items[index];
     if(isImage(it.type,it.name)){
-      // download image as-is
       fetch(it.url).then(r=>r.blob()).then(b=>{
         const a=document.createElement('a');
         a.href = URL.createObjectURL(b);
@@ -1206,7 +1195,6 @@ document.addEventListener('fullscreenchange', () => {
         URL.revokeObjectURL(a.href);
       }).catch(()=>alert('Unable to fetch image for download (CORS)'));
     } else if(isVideo(it.type,it.name) || isAudio(it.type,it.name)){
-      // draw current video frame to canvas
       const c = document.createElement('canvas');
       const w = video.videoWidth || 1280;
       const h = video.videoHeight || 720;
@@ -1230,7 +1218,7 @@ document.addEventListener('fullscreenchange', () => {
     }
   });
 
-  // --- Up next dock (shows next 3) ---
+  // --- Up next dock ---
   function updateUpNext(){
     upNextList.innerHTML = '';
     if(index === -1) return;
@@ -1271,7 +1259,7 @@ document.addEventListener('fullscreenchange', () => {
     } catch(e){ alert('Failed to restore session'); }
   });
 
-  // --- History handling ---
+  // --- History handler ---
   function recordHistory(it){
     try {
       history = history || [];
@@ -1303,10 +1291,8 @@ document.addEventListener('fullscreenchange', () => {
     });
   }
 
-  // --- Smart shuffle: reset on shuffle off ---
-  // handled in shuffleBtn click
 
-  // --- EXIF reader (basic orientation detection only) ---
+  // --- EXIF reader (basic) ---
   async function readEXIFOrientation(file){
     return new Promise((resolve,reject)=>{
       const reader = new FileReader();
@@ -1342,7 +1328,7 @@ document.addEventListener('fullscreenchange', () => {
     });
   }
 
-  // --- Utility: rgb to hex fallback ---
+  // --- rgb to hex fallback ---
   function rgbToHex(rgb){
     if(!rgb) return null;
     rgb = rgb.trim();
@@ -1352,9 +1338,8 @@ document.addEventListener('fullscreenchange', () => {
     return '#' + [1,2,3].map(i=>parseInt(m[i]).toString(16).padStart(2,'0')).join('');
   }
 
-  // --- Thumbnail helper already implemented above ---
 
-  // --- Save current playback position periodically for remote items / videos ---
+  // --- Save current playback position for remote media ---
   setInterval(()=>{
     if(index>=0 && items[index]){
       const it = items[index];
@@ -1364,7 +1349,7 @@ document.addEventListener('fullscreenchange', () => {
     }
   }, 2000);
 
-  // --- Init: restore saved session if any (auto) ---
+  // --- restore saved session if any (auto) ---
   (function tryAutoRestore(){
     const raw = localStorage.getItem('player_saved_session');
     if(!raw) return;
@@ -1380,7 +1365,7 @@ document.addEventListener('fullscreenchange', () => {
     } catch(e){}
   })();
 
-  // --- Misc: show history count on load ---
+  // --- show history count on load ---
   historyCount.textContent = (history && history.length) ? history.length : 0;
 
   // --- Cinema mode toggle ---
@@ -1388,7 +1373,7 @@ document.addEventListener('fullscreenchange', () => {
     document.body.classList.toggle('cinema');
   });
 
-  // --- Expose a small debug function in window (optional) ---
+  // --- Expose a small debug function in window ---
   window.__player = {
     items,
     playIndex,
@@ -1442,6 +1427,63 @@ function srtToVtt(data) {
     .replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2'); // comma to dot
   return vtt;
 }
+
+// Default Rainbow
+let __rainbowInterval = null;
+let __rainHue = 0;
+const __root = document.documentElement;
+
+
+function __startRainbowAccent() {
+  if (__rainbowInterval) return;
+  __rainbowInterval = setInterval(() => {
+    __rainHue = (__rainHue + 1) % 360;
+    const color = `hsl(${__rainHue}, 80%, 55%)`;
+    __root.style.setProperty('--accent', color);
+  }, 50);
+}
+
+function __stopRainbowAccent() {
+  if (__rainbowInterval) {
+    clearInterval(__rainbowInterval);
+    __rainbowInterval = null;
+  }
+}
+
+accentPicker.addEventListener('input', (e) => {
+  try {
+    const color = e.target.value;
+    localStorage.setItem('accent', color);
+    __root.style.setProperty('--accent', color);
+    __stopRainbowAccent();
+  } catch (err) { console.warn('accent input handler error', err); }
+});
+
+accentPicker.addEventListener('mouseenter', () => {
+  __stopRainbowAccent();
+});
+accentPicker.addEventListener('mouseleave', () => {
+  if (!localStorage.getItem('accent')) __startRainbowAccent();
+});
+
+const __savedAccent = localStorage.getItem('accent');
+if (__savedAccent) {
+  __root.style.setProperty('--accent', __savedAccent);
+  try { accentPicker.value = (__savedAccent.startsWith('#') ? __savedAccent : __savedAccent); } catch(e) {}
+} else {
+  __startRainbowAccent();
+}
+
+const resetAccentBtn = document.getElementById('resetAccentBtn');
+
+resetAccentBtn.addEventListener('click', () => {
+  localStorage.removeItem('accent');
+
+  accentPicker.value = '';
+
+  __startRainbowAccent();
+});
+
 })();
 </script>
 </body>
