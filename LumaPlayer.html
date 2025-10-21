@@ -395,9 +395,10 @@ video,img{
   height: 100vh !important;
   max-width: 100vw !important;
   max-height: 100vh !important;
-  object-fit: contain !important; /* or 'cover' if you want to fill completely */
+  object-fit: contain !important;
   z-index: 10000;
   background: #000;
+  cursor: none; /* hide cursor in fullscreen */
 }
 
 </style>
@@ -446,6 +447,8 @@ video,img{
     <div class="file-details" id="fileDetails">
       <div id="fileMeta">No file selected</div>
       <div style="display:flex;gap:8px;align-items:center">
+	  	<input id="subtitleInput" type="file" accept=".srt,.vtt" style="display:none">
+        <button id="addSubtitleBtn" title="Add subtitles">💬</button>
         <button id="screenshotBtn" title="Capture frame">📷</button>
         <button id="vizToggleBtn" title="Toggle visualizer">📈</button>
       </div>
@@ -469,8 +472,6 @@ video,img{
 	  
       <button id="fsBtn">⤢</button>
       <button id="pipBtn">📺</button>
-	  <input id="subtitleInput" type="file" accept=".srt,.vtt" style="display:none">
-      <button id="addSubtitleBtn" title="Add subtitles">💬</button>
     </div>
 
     <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
@@ -491,7 +492,7 @@ video,img{
 
     <footer>- Local-only player — no external connections. Supports drag/drop and folder add.</footer>
     <footer>- URL Player - external connections when loaded but files are not saved to disk.</footer>
-    <footer>if you have any questions or want to report a bug, send an email to injectionmethod@proton.me.</footer>
+    <footer>If you have any questions or want to report a bug, email me at injectionmethod@proton.me or visit <a href="https://github.com/injectionmethod/LumaPlayer" target="_blank" rel="noopener noreferrer">LumaPlayer</a>.</footer>
 	<footer>                                LumaPlayer Version: v1.a                                      </footer>
   </div>
   
@@ -499,7 +500,7 @@ video,img{
   <div class="sidebar">
      <!-- playlist search -->
     <div style="margin-bottom:8px;">
-    <input type="text" id="playlistSearch" placeholder="Search playlist..." style="width:100%;padding:4px 6px;border-radius:6px;border:1px solid #ccc;">
+    <input type="text" id="playlistSearch" placeholder="Search playlist..." style="width:100%;padding:4px 6px;border-radius:6px;border:0px solid #ccc;">
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between">
       <div class="small">Playlist</div>
@@ -956,8 +957,21 @@ function rebuildPlaylist(){
   // --- Fullscreen ---
   fsBtn.addEventListener('click',()=>toggleFS(viewer));
   viewer.addEventListener('dblclick',()=>toggleFS(viewer));
-  function toggleFS(el){if(!document.fullscreenElement){el.requestFullscreen?.(); el.removeAttribute('title');  video.classList.add('fullscreen-media');image.classList.add('fullscreen-media');} else el.setAttribute('title', 'Double-click to toggle fullscreen');{document.exitFullscreen?.();video.classList.remove('fullscreen-media');image.classList.remove('fullscreen-media');}
+  
+  function toggleFS(el) {
+  if (!document.fullscreenElement) {
+    el.requestFullscreen?.();
+    el.removeAttribute('title');
+    video.classList.add('fullscreen-media');
+    image.classList.add('fullscreen-media');
+  } else {
+    document.exitFullscreen?.();
+    video.classList.remove('fullscreen-media');
+    image.classList.remove('fullscreen-media');
+    el.setAttribute('title', 'Double-click to toggle fullscreen');
+  }
 }
+
 
 document.addEventListener('fullscreenchange', () => {
   fsBtn.textContent = document.fullscreenElement ? '⤡' : '⤢';
