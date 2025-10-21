@@ -116,6 +116,7 @@ Alternatively you can leave an issue report here
 
 - Automatic subtitle loading if .srt files are included in directory
 - General bug fixes
+- Fix hint issues as of current build
 - Playlist extension filters
 - Persistent history loading
 - Better integration of adding remote files from url
